@@ -48,7 +48,8 @@ class ACTPolicy(nn.Module):
 
             return loss_dict
         else: # inference time
-            a_hat, _, (_, _), _ = self.model(qpos, image, env_state, tactile) # no action, sample from prior
+            # epoch>=75 disables teacher forcing so the model uses its own predicted tactile_next
+            a_hat, _, (_, _), _ = self.model(qpos, image, env_state, tactile, epoch=999) # no action, sample from prior
             return a_hat
 
     def configure_optimizers(self):

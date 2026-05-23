@@ -269,3 +269,38 @@ data = dict(
         work_dir=work_dir,
     ),
 )
+
+
+"""
+inference config
+"""
+env_pipeline = [
+    *copy.deepcopy(process_pipeline),
+    dict(
+        target="dataset.pipelines_v2.transform.EnvAddBatchDim",
+        keys=set(camera_names + lowdim_to_model + h5_lowdim_input),
+    ),
+]
+
+env = dict(
+    type="Ros2Env",
+    num_queries=chunk_size,
+    norm_stats_cache=norm_stats_cache,
+    load_pipeline=test_load_pipeline,
+    action_dim=58,
+    robot_type="v3",
+    inference_type="v2",
+    obs_timestamp_key=None,
+    inference_dt=0.1,
+    action_output=h5_action_input,
+    temporal_agg=[
+        dict(action_name="/action/right_arm/joint_angle",  agg_flag=True, train_dt=0.01666, offset=0, output_chunk=40, with_raw=True),
+        dict(action_name="/action/right_hand/joint_angle", agg_flag=True, train_dt=0.01666, offset=0, output_chunk=40),
+        dict(action_name="/action/left_arm/joint_angle",   agg_flag=True, train_dt=0.01666, offset=0, output_chunk=40, with_raw=True),
+        dict(action_name="/action/left_hand/joint_angle",  agg_flag=True, train_dt=0.01666, offset=0, output_chunk=40),
+        dict(action_name="/action/neck/joint_angle",       agg_flag=True, train_dt=0.01666, offset=0, output_chunk=40),
+    ],
+    debug=False,
+)
+
+cfg = dict(env=env)

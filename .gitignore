@@ -1,0 +1,30 @@
+# Local working dirs (not for release)
+inference/
+RoboVerse/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.ipynb_checkpoints/
+
+# Data / model artifacts
+ckpt/
+ckpt_dir/
+example_data/
+work_dirs/
+*.ckpt
+*.pkl
+*.pth
+*.hdf5
+*.h5
+
+# Logs / temp
+*.log
+vis_image/

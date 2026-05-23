@@ -57,7 +57,7 @@ def get_args_parser():
     parser.add_argument('--onscreen_render', action='store_true')
     parser.add_argument('--ckpt_dir', action='store', type=str, help='ckpt_dir', default='act_tmp')
     parser.add_argument('--policy_class', action='store', type=str, help='policy_class, capitalize', default='ACT')
-    parser.add_argument('--task_name', action='store', type=str, help='task_name', required=True)
+    parser.add_argument('--task_name', action='store', type=str, help='task_name', default=None)
     parser.add_argument('--seed', action='store', type=int, help='seed', default=0)
     parser.add_argument('--num_epochs', action='store', type=int, help='num_epochs', default=2000)
     parser.add_argument('--kl_weight', action='store', type=int, help='KL Weight', required=False)

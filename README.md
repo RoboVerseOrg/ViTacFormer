@@ -12,6 +12,11 @@
   <a href="https://github.com/RoboVerseOrg/ViTacFormer/issues"><img src="https://img.shields.io/github/issues/RoboVerseOrg/ViTacFormer?color=yellow" alt="Issues"></a>
 </p>
 
+## News
+
+- **2026-05-23**: Released `inference.sh` for real-time policy deployment.
+- **2026-04-27**: ViTacFormer accepted to **RSS 2026**!
+
 ## Hardware Setup
 
 ![hardware](assets/hardware.jpg)
@@ -35,6 +40,8 @@ To enable rich data collection, we use a **teleoperation system** with **precisi
     pip install transforms3d
     pip install zarr
     pip install transformers
+    pip install pyzmq                  
+    pip install pytorch-kinematics     
     cd dataset/ha_data && pip install -e .
     cd detr && pip install -e .
 
@@ -45,13 +52,21 @@ Please download and unzip the example data [here](https://drive.google.com/file/
     conda activate vitacformer
     bash train.sh
 
+## Inference
+
+`inference.py` runs the trained policy as a ZMQ client that connects to a robot or simulator backend on `tcp://127.0.0.1:7778`. Edit the checkpoint paths in `inference.sh`, start your backend server, then:
+
+    bash inference.sh
+
+The backend must publish per-frame observations (images, joint angles, 20 tactile sensor channels) and consume per-frame absolute joint-angle action targets. Action chunking and temporal ensemble are handled inside `inference.py`.
+
 ## Citation
 If you find ViTacFormer useful, please consider citing it:
 ```bibtex
-@misc{heng2025vitacformerlearningcrossmodalrepresentation,
+@misc{heng2026vitacformerlearningcrossmodalrepresentation,
       title={ViTacFormer: Learning Cross-Modal Representation for Visuo-Tactile Dexterous Manipulation}, 
       author={Liang Heng and Haoran Geng and Kaifeng Zhang and Pieter Abbeel and Jitendra Malik},
-      year={2025},
+      year={2026},
       eprint={2506.15953},
       archivePrefix={arXiv},
       primaryClass={cs.RO},
