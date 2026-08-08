@@ -18,7 +18,17 @@ class ACTPolicy(nn.Module):
         print(f'KL Weight {self.kl_weight}')
 
 
-    def __call__(self, qpos, image, actions=None, is_pad=None, device=None, tactile=None, tactile_next=None, epoch=0):
+    def __call__(
+        self,
+        qpos,
+        image,
+        actions=None,
+        is_pad=None,
+        device=None,
+        tactile=None,
+        tactile_next=None,
+        use_gt_tactile=None,
+    ):
         env_state = None
         if actions is not None: # training time
             actions = actions[:, :self.model.num_queries]
@@ -27,7 +37,16 @@ class ACTPolicy(nn.Module):
             if device is None:
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-            a_hat, is_pad_hat, (mu, logvar), tac_hat = self.model(qpos, image, env_state, tactile, actions, is_pad, tactile_next, epoch=epoch)
+            a_hat, is_pad_hat, (mu, logvar), tac_hat = self.model(
+                qpos,
+                image,
+                env_state,
+                tactile,
+                actions,
+                is_pad,
+                tactile_next,
+                use_gt_tactile=use_gt_tactile,
+            )
             total_kld, dim_wise_kld, mean_kld = kl_divergence(mu, logvar)
             loss_dict = dict()
             all_l1 = F.l1_loss(actions, a_hat, reduction='none')
@@ -48,8 +67,13 @@ class ACTPolicy(nn.Module):
 
             return loss_dict
         else: # inference time
-            # epoch>=75 disables teacher forcing so the model uses its own predicted tactile_next
-            a_hat, _, (_, _), _ = self.model(qpos, image, env_state, tactile, epoch=999) # no action, sample from prior
+            a_hat, _, (_, _), _ = self.model(
+                qpos,
+                image,
+                env_state,
+                tactile,
+                use_gt_tactile=False,
+            ) # no action, sample from prior; inference always uses predicted tactile
             return a_hat
 
     def configure_optimizers(self):
@@ -69,4 +93,3 @@ def kl_divergence(mu, logvar):
     mean_kld = klds.mean(1).mean(0, True)
 
     return total_kld, dimension_wise_kld, mean_kld
-

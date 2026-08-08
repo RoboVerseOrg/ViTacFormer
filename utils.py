@@ -67,6 +67,31 @@ def detach_dict(d):
         new_d[k] = v.detach()
     return new_d
 
+
+def extract_model_state_dict(checkpoint):
+    """Return model weights from supported checkpoint formats.
+
+    Training checkpoints are wrapped under ``model``. Older ``policy_last``
+    and ``policy_best`` files in this repository contain a raw state dict, so
+    keep those files loadable for inference and weights-only initialization.
+    """
+    if not isinstance(checkpoint, dict):
+        raise TypeError(f"Unsupported checkpoint type: {type(checkpoint).__name__}")
+
+    if "model" in checkpoint:
+        return checkpoint["model"]
+    if "state_dict" in checkpoint:
+        return checkpoint["state_dict"]
+    if checkpoint and all(
+        isinstance(key, str) and torch.is_tensor(value)
+        for key, value in checkpoint.items()
+    ):
+        return checkpoint
+
+    raise ValueError(
+        "Checkpoint must contain 'model' or 'state_dict', or be a raw state dict"
+    )
+
 def set_seed(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -160,4 +185,3 @@ def apply_joint_mask(qpos_tensor, mask, start_index):
     mask_tensor = torch.tensor(mask, dtype=qpos_tensor.dtype, device=qpos_tensor.device).view(1, 1, -1)
     qpos_tensor[..., start_index:start_index+len(mask)] *= mask_tensor
     return qpos_tensor
-

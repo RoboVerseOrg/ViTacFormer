@@ -5,4 +5,5 @@ python3 imitate_episodes.py \
 --num_epochs 2000  --lr 1e-4 \
 --seed 0 \
 --use_tactile \
-# --resume_path ~
+--tactile_teacher_forcing_epochs 75 \
+# --resume_path ckpt_dir/flip_book/<run>/policy_last.ckpt

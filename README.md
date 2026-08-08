@@ -54,7 +54,7 @@ Please download and unzip the example data [here](https://drive.google.com/file/
 
 ## Inference
 
-`inference.py` runs the trained policy as a ZMQ client that connects to a robot or simulator backend on `tcp://127.0.0.1:7778`. Edit the checkpoint paths in `inference.sh`, start your backend server, then:
+`inference.py` runs the trained policy as a ZMQ client that connects to a robot or simulator backend on `tcp://127.0.0.1:7778`. Set `RUN_DIR` on the first line of `inference.sh` to the timestamped tactile run you want to use, start your backend server, then:
 
     bash inference.sh
 

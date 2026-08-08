@@ -365,12 +365,17 @@ data_tactile = dict(
 inference config
 """
 env_pipeline = [
-    *copy.deepcopy(process_pipeline),
+    # The last three low-dimensional transforms build the future tactile
+    # training target (*/next), which is unavailable during online inference.
+    *copy.deepcopy(lowdim_process_pipeline[:-3] + img_process_pipeline),
     dict(
         target="dataset.pipelines_v2.transform.EnvAddBatchDim",
-        keys=set(camera_names + lowdim_to_model + h5_lowdim_input),
+        keys=set(camera_names + lowdim_to_model + h5_lowdim_input + [tacforce_name]),
     ),
 ]
+for pipe in env_pipeline:
+    if pipe["target"] == "dataset.pipelines_v2.transform.ImageProcess":
+        pipe["aug"] = False
 
 env = dict(
     type="Ros2Env",

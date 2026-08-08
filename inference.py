@@ -16,7 +16,8 @@ except:
 from torchvision.transforms.functional import resize
 
 from utils import (
-    normalize_obs_lowdim, normalize_tactile, denormalize_action, apply_joint_mask
+    normalize_obs_lowdim, normalize_tactile, denormalize_action, apply_joint_mask,
+    extract_model_state_dict,
 )
 from policy import ACTPolicy
 
@@ -554,11 +555,23 @@ class InferencerV3:
     def run(self):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        policy = ACTPolicy(config['policy_config'])
         checkpoint = torch.load(config['ckpt_path'], map_location=device)
-        # print(checkpoint.keys())
-        policy.load_state_dict(checkpoint['model'])
-        # policy.load_state_dict(torch.load(config['ckpt_path'], map_location=device))
+        saved_policy_config = (
+            checkpoint.get('policy_config')
+            if isinstance(checkpoint, dict)
+            else None
+        )
+        if (
+            saved_policy_config is not None
+            and 'use_tactile' in saved_policy_config
+            and saved_policy_config['use_tactile'] != config['use_tactile']
+        ):
+            raise ValueError(
+                "Checkpoint use_tactile setting does not match the inference CLI"
+            )
+        policy_config = saved_policy_config or config['policy_config']
+        policy = ACTPolicy(policy_config)
+        policy.load_state_dict(extract_model_state_dict(checkpoint))
         policy.eval().to(device)
         print(f"loaded {config['ckpt_path']}")
 

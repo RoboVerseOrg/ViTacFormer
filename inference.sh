@@ -1,4 +1,6 @@
+RUN_DIR=ckpt_dir/flip_book/20260808_120000_tactile
+
 python3 inference.py \
---ckpt_path ckpt_dir/flip_book/policy_best.ckpt \
---stats_path ckpt_dir/flip_book/normalize.pkl \
---use_tactile \
+--ckpt_path "$RUN_DIR/policy_best.ckpt" \
+--stats_path "$RUN_DIR/normalize.pkl" \
+--use_tactile

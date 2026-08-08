@@ -90,7 +90,17 @@ class DETRVAE(nn.Module):
             self.additional_pos_embed = nn.Embedding(2, hidden_dim) # learned position embedding for proprio and latent
 
 
-    def forward(self, qpos, image, env_state, tactile=None, actions=None, is_pad=None, tactile_next=None, epoch=0):
+    def forward(
+        self,
+        qpos,
+        image,
+        env_state,
+        tactile=None,
+        actions=None,
+        is_pad=None,
+        tactile_next=None,
+        use_gt_tactile=None,
+    ):
         """
         qpos: batch, qpos_dim
         image: batch, num_cam, channel, height, width
@@ -98,6 +108,8 @@ class DETRVAE(nn.Module):
         actions: batch, seq, action_dim
         tactile: batch, tactile_dim*seq_tactile
         tactile_next: batch, seq_tactile, tactile_dim
+        use_gt_tactile: whether the action decoder receives tactile_next
+            instead of the model's tactile prediction
         """
         is_training = actions is not None # train or val
         bs, _ = qpos.shape
@@ -147,11 +159,20 @@ class DETRVAE(nn.Module):
             src = torch.cat(all_cam_features, axis=3)
             pos = torch.cat(all_cam_pos, axis=3)
             if self.use_tactile:
+                if use_gt_tactile is None:
+                    raise ValueError(
+                        'use_gt_tactile must be explicitly specified when '
+                        'use_tactile=True'
+                    )
                 tactile_input = self.input_proj_tactile(tactile)
                 hs_tactile = self.transformer(src, None, self.query_embed_tactile.weight, pos, latent_input, proprio_input, self.additional_pos_embed.weight, tactile_input, None)[0]
                 tactile_hat = self.tactile_head(hs_tactile)  ##[bs, 18, tactile_dim]
                 B, T, D = tactile_hat.shape
-                if epoch < 75:
+                if use_gt_tactile:
+                    if tactile_next is None:
+                        raise ValueError(
+                            'tactile_next is required when use_gt_tactile=True'
+                        )
                     tactile_pred_input = tactile_next.view(B, T * D)
                 else:
                     tactile_pred_input = tactile_hat.view(B, T * D)
